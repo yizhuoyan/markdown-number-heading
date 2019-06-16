@@ -45,6 +45,9 @@ public class HeadingModel {
 	public static HeadingModel parseHeading(String heading,HeadingModel root) {
 		int level=parseLevel(heading);
 		String name=heading.substring(level).trim();
+		if(name.length()==0) {
+			return null;
+		}
 		HeadingModel hm=new HeadingModel();
 		hm.level=level;
 		hm.name=name;

@@ -13,6 +13,7 @@ public class Application {
 	public static void main(String[] args) throws Exception {
 		//查找目录下所有md文件
 		String dir=args.length==0?".":args[0];
+		
 		Files.walkFileTree(Path.of(dir), new  FileVisitor<Path>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -23,6 +24,7 @@ public class Application {
 						MarkdownFileProcessor.hanldeOneFile(file);
 						System.out.println("...ok");
 					} catch (Exception e) {
+						System.err.println();
 						e.printStackTrace();
 					}
 				}
