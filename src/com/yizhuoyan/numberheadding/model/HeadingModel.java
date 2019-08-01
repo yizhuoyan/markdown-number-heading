@@ -5,6 +5,7 @@ import java.util.List;
 
 public class HeadingModel {
 	private static final char SEQ_MARK_CHAR='、';
+	
 	public static HeadingModel root() {
 		 HeadingModel root=new HeadingModel();
 		 root.childOrder=0;
@@ -44,8 +45,15 @@ public class HeadingModel {
 
 	public static HeadingModel parseHeading(String heading,HeadingModel root) {
 		int level=parseLevel(heading);
+		if(level==0) {
+			return null;
+		}
+			
 		String name=heading.substring(level).trim();
 		if(name.length()==0) {
+			return null;
+		}
+		if(name.startsWith("#")) {
 			return null;
 		}
 		HeadingModel hm=new HeadingModel();
@@ -102,7 +110,7 @@ public class HeadingModel {
 	public String process() {
 		StringBuilder result=new StringBuilder();
 	
-		result.append("#".repeat(this.level));
+		result.append(repeat("#",this.level));
 		result.append(" ");
 		String name=this.name;
 		int markEndIndex=name.indexOf(SEQ_MARK_CHAR);
@@ -112,6 +120,11 @@ public class HeadingModel {
 		result.append(this.calcNumberMark());
 		
 		result.append(name);
+		return result.toString();
+	}
+	private static String repeat(String s,int times) {
+		StringBuilder result=new StringBuilder(s.length()*times);
+		for(int i=times;i-->0;result.append(s));
 		return result.toString();
 	}
 	private String calcNumberMark() {

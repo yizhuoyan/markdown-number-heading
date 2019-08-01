@@ -2,59 +2,66 @@ package com.yizhuoyan.numberheadding.model;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.MalformedInputException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class MarkdownFileProcessor {
+	private static final Charset UTF8 = Charset.forName("UTF-8");
+	private static final Charset GBK = Charset.forName("GBK");
+	final private Path path;
+	Charset fileCharset;
 
-	public static void hanldeOneFile(Path path) throws Exception {
-		Charset UTF8=Charset.forName("UTF-8");
-		Charset GBK=Charset.forName("GBK");
-		
-		// 尝试读取字符编码gbk		
-		BufferedReader in = Files.newBufferedReader(path,GBK);
-		String line = null;
-		try {
-			line = in.readLine();
-		} catch (MalformedInputException e) {
-			// 说明不是gbk,尝试utf
-			System.out.println("说明不是gbk,尝试utf-8");
-			in.close();
-			in = Files.newBufferedReader(path,UTF8);
-			line = in.readLine();
+	public MarkdownFileProcessor(Path path) {
+		this.path = path;
+	}
+	private Path getOutputPath() {
+		Path outPath = path.resolveSibling("bak." + path.getFileName().toString());
+		return outPath;
+	}
+	private BufferedReader tryReader() throws IOException {
+		// 尝试读取字符编码gbk
+		try (BufferedReader in = Files.newBufferedReader(path, GBK)) {
+			try {
+				in.readLine();
+				fileCharset = GBK;
+			} catch (MalformedInputException e) {
+				// 说明不是gbk,尝试utf
+				System.out.println("说明不是gbk,尝试utf-8");
+				fileCharset = UTF8;
+			}
 		}
-		Path outPath = path.resolveSibling(path.getFileName().toString() + ".bak");
-		BufferedWriter out = Files.newBufferedWriter(outPath,UTF8);
-		HeadingModel root=HeadingModel.root();
-		while (line != null) {
-			String trimRow = line.trim();
-			if(trimRow.length()>0) {
+		return Files.newBufferedReader(path, fileCharset);
+	}
 
-				if (trimRow.charAt(0) != '#') {
+	public void process() throws Exception {
+		Path outPath =getOutputPath();
+
+		try (BufferedReader in = tryReader(); 
+				BufferedWriter out = Files.newBufferedWriter(outPath, UTF8)) {
+
+			HeadingModel root = HeadingModel.root();
+			String line = null;
+			while ((line = in.readLine()) != null) {
+				if(line.length()==0)continue;
+				HeadingModel hm = HeadingModel.parseHeading(line, root);
+				if(hm==null) {
 					out.write(line);
 					out.newLine();
-				} else {
-					HeadingModel hm = HeadingModel.parseHeading(trimRow,root);
-					if(hm!=null) {
-						out.write(hm.process());
-						out.newLine();
-					}
+				}else {
+					out.write(hm.process());
+					out.newLine();
 				}
-				
 				out.flush();
 			}
-			line = in.readLine();
-
 		}
-		in.close();
-		out.close();
+		//修改文件名
 		Path temp = path.resolveSibling(System.nanoTime() + "");
 		Files.move(path, temp);
 		Files.move(outPath, path);
 		Files.move(temp, outPath);
-
 	}
+	
 }
