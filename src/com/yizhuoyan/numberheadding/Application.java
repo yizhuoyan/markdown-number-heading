@@ -11,6 +11,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import com.yizhuoyan.numberheadding.model.MarkdownFileProcessor;
 
 public class Application {
+	
 	public static void main(String[] args) throws Exception {
 		//查找目录下所有md文件
 		String dir=args.length==0?".":args[0];

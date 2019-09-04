@@ -14,6 +14,7 @@ public class HeadingModel {
 		 root.parent=null;
 		 return root;
 	}
+	
 	private HeadingModel parent;
 	private int level;
 	private String name;
@@ -109,7 +110,6 @@ public class HeadingModel {
 	
 	public String process() {
 		StringBuilder result=new StringBuilder();
-	
 		result.append(repeat("#",this.level));
 		result.append(" ");
 		String name=this.name;
